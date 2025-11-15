@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Relationship
 
-
 metadata = SQLModel.metadata
 
 #links many-to-many
