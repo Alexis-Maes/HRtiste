@@ -4,12 +4,11 @@ from typing import Literal, Optional
 from anthropic import AsyncAnthropic
 from .config import ANTHROPIC_API_KEY
 
-
-ClaudeModel = Literal["claude-sonnet-4-5", "claude-haiku-4-5"]
+ClaudeModel = Literal["claude-sonnet-4-5", "claude-haiku-4-5"] # Define supported models
 
 _client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
-
+# Wrapper around the Anthropic async client to send a message and get a response
 async def ask_raw(
     prompt: str,
     model: ClaudeModel = "claude-sonnet-4-5",
@@ -19,22 +18,6 @@ async def ask_raw(
     top_p: Optional[float] = None,
     raw: bool = False,
 ):
-    """
-    Send a raw text prompt to Claude and return the response as plain text.
-
-    Args:
-        prompt: User content to send to Claude.
-        model: Claude model name.
-        max_tokens: Maximum number of tokens to generate.
-        system_prompt: Optional system prompt to steer behavior.
-        temperature: Optional temperature for sampling.
-        top_p: Optional top-p sampling.
-        raw: If True, return the full response object instead of plain text.
-
-    Returns:
-        str or full response object depending on `raw`.
-    """
-
     # Build the core payload
     kwargs = {
         "model": model,
@@ -47,7 +30,7 @@ async def ask_raw(
         ],
     }
 
-    # Top-level system prompt (this is the correct way for Anthropic)
+    # Top-level system prompt
     if system_prompt:
         kwargs["system"] = system_prompt
 
