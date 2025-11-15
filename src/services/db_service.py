@@ -30,8 +30,6 @@ class _DatabaseService:
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         await self.check_initialized()
         async with self.async_session() as session:
-            print("on est la")
-            print(type(session))
             yield session
 
 

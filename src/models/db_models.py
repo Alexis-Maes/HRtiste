@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
-
 metadata = SQLModel.metadata
+
 
 class Experience(BaseModel):
     company: str
@@ -14,6 +14,12 @@ class Experience(BaseModel):
 
 class CandidateProfile(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    name: str
+    email: str
+    phone: str
+
+
+class CandidateFromCV(BaseModel):
     name: str
     email: str
     phone: str
