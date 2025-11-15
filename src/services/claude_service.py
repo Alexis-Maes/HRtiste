@@ -26,6 +26,8 @@ class ClaudeService:
         system_prompt: str | None = None,
         max_tokens: int = 800,
     ) -> Message:
+        if system_prompt is None:
+            system_prompt = ""
         completion = await self.client.messages.create(
             model=model,
             messages=[{"role": "user", "content": inputs}],

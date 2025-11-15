@@ -6,7 +6,7 @@ from sqlmodel import select
 
 from models.api_models import CandidateResponse, SearchParams
 from models.db_models import Candidate, Process
-from profile_manager import search_candidates
+from profile_manager import search_candidates, update_description
 from services.db_service import db_service
 
 router = APIRouter(tags=["Candidates"])
@@ -55,8 +55,9 @@ async def get_candidate_by_id(candidate_id: int):
         return candidate
 
 
-@router.post("/candidates", response_model=Candidate)
+@router.post("/candidates/create", response_model=Candidate)
 async def create_candidate(candidate: Candidate):
+    candidate = await update_description(candidate)
     async with db_service.get_session() as session:
         session.add(candidate)
         await session.commit()
@@ -82,6 +83,7 @@ async def search_candidates_route(request: SearchParams):
             technical_attention_point=candidate.technical_attention_point,
             fit_attention_point=candidate.fit_attention_point,
             fit_strengths=candidate.fit_strengths,
+            description=candidate.description
         )
         for candidate in candidates
     ]
