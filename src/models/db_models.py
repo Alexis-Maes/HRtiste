@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Relationship
-
+from typing import List
 metadata = SQLModel.metadata
 
 #links many-to-many
@@ -29,13 +29,7 @@ class CandidateProfile(SQLModel, table=True):
     last_name: str
     email: str
     phone: str
-    skills: list[str] 
-    experiences: list[Experience] 
-    processes: list["Process"] = Relationship(
-        back_populates="candidates",
-        link_model=CandidateProcessLink
-        )
-    interviews: list["Interview"] = Relationship(back_populates="candidate")
+
 
 
 class RecruiterProfile(SQLModel, table=True):
@@ -43,32 +37,17 @@ class RecruiterProfile(SQLModel, table=True):
     first_name: str
     last_name: str
     email: str
-    processes: list["Process"] = Relationship(
-        back_populates="recruiters",
-        link_model=RecruiterProcessLink
-    )
-    interviews: list["Interview"] = Relationship(back_populates="recruiter")
 
 
 class Process(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     number_candidates: int
-    necessary_skills: list[str] | None = Field(default=None, sa_column_kwargs={"nullable": True})
 
-    # many-to-many
-    candidates: list[CandidateProfile] = Relationship(
-        back_populates="processes",
-        link_model=CandidateProcessLink
-    )
 
-    recruiters: list[RecruiterProfile] = Relationship(
-        back_populates="processes",
-        link_model=RecruiterProcessLink
-    )
 
     # many-to-one depuis Interview
-    interviews: list["Interview"] = Relationship(back_populates="process")
+    interviews: List["Interview"] = Relationship(back_populates="process")
 
 
 class Interview(SQLModel, table=True):
@@ -87,6 +66,11 @@ class Interview(SQLModel, table=True):
     feedback_candidate: str | None = None
 
 
+
+class PDFModel(BaseModel):
+    first_name: str
+    last_name: str
+    skills: List[str]
 
 
 
