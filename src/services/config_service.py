@@ -13,7 +13,9 @@ class _ConfigService(BaseSettings):
 
     access_status: str = "private"
 
-    database_url: str = "postgresql://admin:admin@localhost:5432/profile_manager"
+    database_url: str = (
+        "postgresql+asyncpg://admin:admin@localhost:5432/profile_manager"
+    )
 
     class Config:
         env_file = ".env"

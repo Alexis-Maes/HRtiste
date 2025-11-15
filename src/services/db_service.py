@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Self
 
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from services.config_service import ConfigService
 
 
 class _DatabaseService:
@@ -13,34 +15,24 @@ class _DatabaseService:
         self.initialized = False
 
     async def initialize(self) -> None:
-        self.engine = create_async_engine(
-            "postgresql+asyncpg://admin:admin@localhost:5432/profile_manager"
-        )
+        self.engine = create_async_engine(ConfigService.database_url, echo=True)
         self.async_session = async_sessionmaker(
             bind=self.engine, class_=AsyncSession, expire_on_commit=False
         )
 
-    async def check_initialized(self) -> None:
+    async def check_initialized(self) -> Self:
         if not self.initialized:
             await self.initialize()
             self.initialized = True
         return self
 
     @asynccontextmanager
-    async def get_session(self) -> AsyncGenerator[AsyncGenerator, None]:
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         await self.check_initialized()
         async with self.async_session() as session:
+            print("on est la")
+            print(type(session))
             yield session
 
 
 db_service = _DatabaseService()
-
-
-async def main():
-    await db_service.check_initialized()
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
