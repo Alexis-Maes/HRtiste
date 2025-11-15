@@ -1,70 +1,89 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
-from sqlmodel import Field, SQLModel, Relationship
-from typing import List
+from sqlmodel import Field, Relationship, SQLModel
+
 metadata = SQLModel.metadata
-
-#links many-to-many
-class CandidateProcessLink(SQLModel, table=True):
-    candidate_id: int = Field(foreign_key="candidateprofile.id", primary_key=True)
-    process_id: int = Field(foreign_key="process.id", primary_key=True)
+# ============================================
+# Association Table (declared FIRST)
+# ============================================
 
 
-class RecruiterProcessLink(SQLModel, table=True):
-    recruiter_id: int = Field(foreign_key="recruiterprofile.id", primary_key=True)
-    process_id: int = Field(foreign_key="process.id", primary_key=True)
+class ProcessCandidateLink(SQLModel, table=True):
+    process_id: Optional[int] = Field(
+        default=None, foreign_key="process.id", primary_key=True
+    )
+    candidate_id: Optional[int] = Field(
+        default=None, foreign_key="candidate.id", primary_key=True
+    )
 
 
-class Experience(BaseModel):
-    company: str
-    position: str
-    start_date: str
-    end_date: str
-    job_description: str
+# ============================================
+# Recruiter
+# ============================================
 
 
+class Recruiter(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
 
-class CandidateProfile(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    first_name: str
-    last_name: str
+    interviews: List["Interview"] = Relationship(back_populates="recruiter")
+
+
+# ============================================
+# Candidate
+# ============================================
+
+
+class Candidate(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nom: str
+    prenom: str
+    ecole: str
+    experience: str
     email: str
-    phone: str
+    numero: str
+
+    interviews: List["Interview"] = Relationship(back_populates="candidate")
+
+    # Many-to-many with Process
+    processes: List["Process"] = Relationship(
+        back_populates="candidates",
+        link_model=ProcessCandidateLink,  # ✔️ class, not string
+    )
 
 
-
-class RecruiterProfile(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    first_name: str
-    last_name: str
-    email: str
+# ============================================
+# Process
+# ============================================
 
 
 class Process(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str
-    number_candidates: int
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name_process: str
+    job_description: str
+
+    candidates: List[Candidate] = Relationship(
+        back_populates="processes",
+        link_model=ProcessCandidateLink,  # ✔️ class exists already
+    )
 
 
-
-    # many-to-one depuis Interview
-    interviews: List["Interview"] = Relationship(back_populates="process")
+# ============================================
+# Interview
+# ============================================
 
 
 class Interview(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
 
-    candidate_id: int = Field(foreign_key="candidateprofile.id")
-    recruiter_id: int = Field(foreign_key="recruiterprofile.id")
-    process_id: int = Field(foreign_key="process.id")
+    recruiter_id: int = Field(foreign_key="recruiter.id")
+    candidate_id: int = Field(foreign_key="candidate.id")
 
-    candidate: CandidateProfile = Relationship(back_populates="interviews")
-    recruiter: RecruiterProfile = Relationship(back_populates="interviews")
-    process: Process = Relationship(back_populates="interviews")
+    feedback: str
 
-    date: str
-    feedback_recruiter: str | None = None
-    feedback_candidate: str | None = None
-
+    recruiter: Recruiter = Relationship(back_populates="interviews")
+    candidate: Candidate = Relationship(back_populates="interviews")
 
 
 class PDFModel(BaseModel):
@@ -73,4 +92,13 @@ class PDFModel(BaseModel):
     skills: List[str]
 
 
+class ProcessCreate(SQLModel):
+    name_process: str
+    job_description: str
+    candidate_ids: Optional[List[int]] = None  # facultatif
 
+
+class InterviewCreate(SQLModel):
+    recruiter_id: int
+    candidate_id: int
+    feedback: str

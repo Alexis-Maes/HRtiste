@@ -14,7 +14,7 @@ class _ConfigService(BaseSettings):
     access_status: str = "private"
 
     database_url: str = (
-        "postgresql+asyncpg://admin:admin@4.tcp.eu.ngrok.io:18515/profile_manager"
+        "postgresql+asyncpg://admin:admin@4.tcp.eu.ngrok.io:18515/hrtist"
     )
 
     anthropic_api_key: str | None = None
