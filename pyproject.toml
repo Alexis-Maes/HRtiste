@@ -24,6 +24,7 @@ dependencies = [
     "pgvector>=0.4.1",
     "mistralai>=1.9.11",
     "elevenlabs>=2.23.0",
+    "python-multipart>=0.0.20",
 ]
 
 [tool.setuptools.packages.find]
