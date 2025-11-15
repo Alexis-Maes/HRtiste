@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Union
 
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
@@ -38,16 +38,21 @@ class ClaudeService:
     async def structured_completion(
         self,
         inputs: str,
-        pdf_path: str,
+        pdf_data: Union[bytes, str],
         ouput_model: Type[Model],
         model: str = "claude-sonnet-4-5"
     ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
 
+        # Encoder le PDF en base64 #
+        if isinstance(pdf_data, str):
+            pdf_bytes = base64.standard_b64decode(pdf_data)
+        else:
+            pdf_bytes = pdf_data
+        pdf_base64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
 
-        with open(pdf_path, "rb") as f:
-            pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
+        # Gérer le schéma de sortie #
         output_json_schema = ouput_model.model_json_schema()
         output_json_schema = {
             "properties": {attribute: {'type': details['type']} for attribute, details in output_json_schema['properties'].items()},
@@ -67,7 +72,7 @@ class ClaudeService:
                             "source": {
                                 "type": "base64",
                                 "media_type": "application/pdf",
-                                "data": pdf_data
+                                "data": pdf_base64
                             }
                         },
                         {
