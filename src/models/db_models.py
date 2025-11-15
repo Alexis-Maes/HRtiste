@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Literal
+from typing import Any, List, Optional, Union, Literal
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
