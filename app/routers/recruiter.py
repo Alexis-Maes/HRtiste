@@ -1,16 +1,15 @@
-from typing import List, Optional
-from fastapi import FastAPI, HTTPException, APIRouter
-from sqlmodel import SQLModel, Field, Session, create_engine, select
-from app.models import Candidate, Recruiter, ProcessCandidateLink, Process, Interview
-from ..database import engine
+from fastapi import APIRouter
 
+from models.db_models import Recruiter
+from services.db_service import db_service
 
-router = APIRouter(tags= ['Recruiters'])
+router = APIRouter(tags=["Recruiters"])
+
 
 @router.post("/recruiters", response_model=Recruiter)
-def create_recruiter(recruiter: Recruiter):
-    with Session(engine) as session:
-        session.add(recruiter)
-        session.commit()
+async def create_recruiter(recruiter: Recruiter):
+    async with db_service.get_session() as session:
+        await session.add(recruiter)
+        await session.commit()
         session.refresh(recruiter)
         return recruiter

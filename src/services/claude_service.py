@@ -57,7 +57,7 @@ class ClaudeService:
         response = self.client.beta.messages.create(
             model=model,
             max_tokens=1024,
-            betas=["structured-outputs-2025-11-13"]
+            betas=["structured-outputs-2025-11-13"],
             messages=[
                 {
                     "role": "user",
