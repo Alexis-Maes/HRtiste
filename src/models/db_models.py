@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
@@ -109,3 +109,6 @@ class InterviewCreate(SQLModel):
     recruiter_id: int
     candidate_id: int
     feedback: str
+
+
+TableModel = Union[Candidate, Interview, Process]
