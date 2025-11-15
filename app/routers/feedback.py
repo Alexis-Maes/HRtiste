@@ -19,16 +19,14 @@ router = APIRouter(tags=["Feedback"])
 @router.post("/interviews/rejection-email", response_model=RejectionEmailResponse)
 async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionEmailResponse:
     """
-    Génère un mail de refus personnalisé à partir :
-    - du nom du candidat (full name),
-    - des infos déjà présentes en BDD (candidat + dernier entretien + process).
+    Generate a personalized rejection email for a candidate based on their interview feedback.
     """
 
     if payload.decision == "accepted":
         # For now, we only handle rejection emails
         raise HTTPException(
             status_code=400,
-            detail="Cette route est pour l'instant dédiée aux mails de refus (decision='rejected').",
+            detail="This route only handles rejection emails for now.",
         )
 
     # ============================
@@ -40,7 +38,7 @@ async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionE
     if len(parts) < 2:
         raise HTTPException(
             status_code=400,
-            detail="Le nom complet du candidat doit contenir au moins un prénom et un nom.",
+            detail="The complete name of the candidate must include at least a first name and a last name.",
         )
 
     first_name = parts[0]
@@ -81,10 +79,10 @@ async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionE
         if not interview:
             raise HTTPException(
                 status_code=404,
-                detail=f"Aucun entretien trouvé pour le candidat '{full_name}'.",
+                detail=f"No candidate found in the database with this name '{full_name}'.",
             )
 
-        # On prend le premier process lié (s'il y en a)
+        # We take the first process linked to the candidate (if any)
         process = candidate.processes[0] if candidate.processes else None
 
     # ============================
