@@ -17,6 +17,8 @@ class _ConfigService(BaseSettings):
         "postgresql+asyncpg://admin:admin@localhost:5432/profile_manager"
     )
 
+    anthropic_api_key: str | None = None
+
     class Config:
         env_file = ".env"
         extra = "ignore"
