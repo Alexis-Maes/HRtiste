@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
+from sqlalchemy.dialects.postgresql import JSON
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 metadata = SQLModel.metadata
@@ -18,6 +19,7 @@ class ProcessCandidateLink(SQLModel, table=True):
         default=None, foreign_key="candidate.id", primary_key=True
     )
 
+
 # ============================================
 # Candidate
 # ============================================
@@ -30,10 +32,9 @@ class Candidate(SQLModel, table=True):
     email: str
     numero: str
 
-    skills: list[str]
-
-    formations: List[str] = Field(default=[])
-    experiences: List[str] = Field(default=[])
+    skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))
 
     business_strengths: str = Field(default=None)
     technical_strengths: str = Field(default=None)
@@ -64,7 +65,7 @@ class Process(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     job_description: str
-    required_skills: List[str]
+    required_skills: List[str] = Field(default_factory=list, sa_column=Column(JSON))
 
     candidates: List[Candidate] = Relationship(
         back_populates="processes",
