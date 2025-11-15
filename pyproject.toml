@@ -20,6 +20,7 @@ dependencies = [
     "pydantic>=2.12.4",
     "pydantic-settings>=2.12.0",
     "sqlmodel>=0.0.27",
+    "kaggle>=1.7.4.5",
 ]
 
 [tool.setuptools.packages.find]
