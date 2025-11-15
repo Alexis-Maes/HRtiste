@@ -1,6 +1,9 @@
+from sqlmodel import select
+
 from models.db_models import Candidate
 from prompts.build_description import BUILD_DESCRIPTION_PROMPT
 from services.claude_service import claude_service
+from services.db_service import db_service
 from services.embedding_service import embedding_service
 
 
@@ -48,3 +51,16 @@ async def update_description(candidate: Candidate) -> Candidate:
     candidate.embeddings = await build_candidate_embedding(candidate=candidate)
     candidate.description = await build_candidate_description(candidate=candidate)
     return candidate
+
+
+async def search_candidates(query: str, limit: int = 1) -> Candidate:
+    embedded_query = await embedding_service.get_embedding(text=query)
+
+    async with db_service.get_session() as session:
+        query = (
+            select(Candidate)
+            .order_by(Candidate.embeddings.cosine_distance(embedded_query))
+            .limit(limit)
+        )
+        candidates = (await session.exec(query)).all()
+        return candidates
