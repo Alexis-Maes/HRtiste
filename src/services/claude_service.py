@@ -1,20 +1,18 @@
-from typing import Type, TypeVar
+import base64
+from typing import Type, TypeVar, Union
 
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
 from pydantic import BaseModel
-import base64
 
-from services.config_service import ConfigService
 from models.db_models import PDFModel
+from services.config_service import ConfigService
 
 Model = TypeVar("Model", bound=BaseModel)
 
-
-
-# =========================================== #
-PDF_PATH = r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf"
-# =========================================== #
+# =================================== #
+PDF_PATH = ""
+# =================================== #
 
 
 class ClaudeService:
@@ -28,29 +26,51 @@ class ClaudeService:
         system_prompt: str | None = None,
         max_tokens: int = 800,
     ) -> Message:
-
-            
         completion = await self.client.messages.create(
-            model=model, messages=[{"role": "user", "content": inputs}], max_tokens=max_tokens, system=system_prompt
+            model=model,
+            messages=[{"role": "user", "content": inputs}],
+            max_tokens=max_tokens,
+            system=system_prompt,
         )
         return completion
 
     async def structured_completion(
         self,
         inputs: str,
-        pdf_path: str,
-        ouput_model: Type[Model],
-        model: str = "claude-sonnet-4-5"
+        output_model: Type[Model],
+        pdf_data: Union[bytes, str, None] = None,
+        model: str = "claude-sonnet-4-5",
     ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
 
+        content = [{"type": "text", "text": inputs}]
 
-        with open(pdf_path, "rb") as f:
-            pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
+        # Encoder le PDF en base64 #
+        if pdf_data:
+            if isinstance(pdf_data, str):
+                pdf_bytes = base64.standard_b64decode(pdf_data)
+            else:
+                pdf_bytes = pdf_data
+            pdf_base64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
 
-        output_json_schema = ouput_model.model_json_schema()
+            content.append(
+                {
+                    "type": "document",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "application/pdf",
+                        "data": pdf_base64,
+                    },
+                }
+            )
+
+        # Gérer le schéma de sortie #
+        output_json_schema = output_model.model_json_schema()
         output_json_schema = {
-            "properties": {attribute: {'type': details['type']} for attribute, details in output_json_schema['properties'].items()},
+            "properties": {
+                attribute: {"type": details["type"]}
+                for attribute, details in output_json_schema["properties"].items()
+            },
             "required": output_json_schema.get("required", []),
         }
 
@@ -58,52 +78,26 @@ class ClaudeService:
             model=model,
             max_tokens=1024,
             betas=["structured-outputs-2025-11-13"],
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "document",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "application/pdf",
-                                "data": pdf_data
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": inputs
-                        }
-                    ]
-                }
-            ],
+            messages=[{"role": "user", "content": content}],
             output_format={
                 "type": "json_schema",
                 "schema": {
                     "type": "object",
                     **output_json_schema,
-                    "additionalProperties": False
-                }
-            }
+                    "additionalProperties": False,
+                },
+            },
         )
 
         return response.content[0].text
-
-
-
-
 
 
 claude_service = ClaudeService()
 
 
 async def main() -> None:
-
-
     message = await claude_service.structured_completion(
-        inputs="Hello, world!",
-        pdf_path=PDF_PATH,
-        ouput_model=PDFModel
+        inputs="Hello, world!", pdf_path=PDF_PATH, ouput_model=PDFModel
     )
     print(message)
 

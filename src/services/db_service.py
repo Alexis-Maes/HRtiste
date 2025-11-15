@@ -1,10 +1,10 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Self
+from typing import Any, AsyncGenerator, Self
 
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-
+from models.db_models import TableModel
 from services.config_service import ConfigService
 
 
@@ -32,6 +32,16 @@ class _DatabaseService:
         await self.check_initialized()
         async with self.async_session() as session:
             yield session
+
+    async def add_element(self, item: TableModel) -> None:
+        async with self.get_session() as session:
+            session.add(item)
+            await session.commit()
+
+    async def exec_query(self, query: str) -> Any:
+        async with self.get_session() as session:
+            result = await session.exec(query)
+            return result
 
 
 db_service = _DatabaseService()

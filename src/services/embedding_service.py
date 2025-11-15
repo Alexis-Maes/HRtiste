@@ -7,7 +7,7 @@ class EmbeddingService:
     def __init__(self):
         self.client = Mistral(api_key=ConfigService.mistral_api_key)
 
-    async def get_embedding(self, text: str):
+    async def get_embedding(self, text: str) -> list[float]:
         response = await self.client.embeddings.create_async(
             model="mistral-embed", inputs=[text]
         )
