@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Literal
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
@@ -96,7 +96,10 @@ class Interview(SQLModel, table=True):
 class PDFModel(BaseModel):
     first_name: str
     last_name: str
-    skills: List[str]
+    email: str
+    skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))
 
 
 class ProcessCreate(SQLModel):
@@ -106,9 +109,30 @@ class ProcessCreate(SQLModel):
 
 
 class InterviewCreate(SQLModel):
-    recruiter_id: int
     candidate_id: int
     feedback: str
 
 
 TableModel = Union[Candidate, Interview, Process]
+
+
+# ============================================
+# Feedback model
+# ============================================
+
+class RejectionEmailRequest(BaseModel):
+    """
+    Payload sent by the front:
+    """
+    candidate_full_name: str
+    decision: Literal["accepted", "rejected"]
+    recruiter_name: Optional[str] = None
+    process_name: Optional[str] = None
+
+
+class RejectionEmailResponse(BaseModel):
+    """
+    Sendback to the front: mail template ready to display / copy.
+    """
+    subject: str
+    body: str
