@@ -13,6 +13,7 @@ Model = TypeVar("Model", bound=BaseModel)
 
 # =================================== #
 PDF_PATH = Path(r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf")
+# Put your own PDF path
 # =================================== #
 
 
