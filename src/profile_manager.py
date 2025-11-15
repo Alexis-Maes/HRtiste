@@ -5,6 +5,7 @@ from prompts.build_description import BUILD_DESCRIPTION_PROMPT
 from services.claude_service import claude_service
 from services.db_service import db_service
 from services.embedding_service import embedding_service
+from utils.claude_utils import extract_text
 
 
 async def build_candidate_embedding(candidate: Candidate) -> list[float]:
@@ -43,7 +44,7 @@ async def build_candidate_description(candidate: Candidate):
 
     prompt = BUILD_DESCRIPTION_PROMPT.format(description=candidate_profile)
     response = await claude_service.completion(inputs=prompt)
-    description = response.message
+    description = extract_text(response.content)
     return description
 
 
@@ -53,7 +54,7 @@ async def update_description(candidate: Candidate) -> Candidate:
     return candidate
 
 
-async def search_candidates(query: str, limit: int = 1) -> Candidate:
+async def search_candidates(query: str, limit: int = 1) -> list[Candidate]:
     embedded_query = await embedding_service.get_embedding(text=query)
 
     async with db_service.get_session() as session:

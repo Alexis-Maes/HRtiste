@@ -1,10 +1,10 @@
+import base64
 from typing import Type, TypeVar, Union
 from pathlib import Path
 
 from anthropic import AsyncAnthropic, transform_schema
 from anthropic.types import Message
 from pydantic import BaseModel
-import base64
 
 from services.config_service import ConfigService
 from models.db_models import PDFModel, Interview
@@ -15,10 +15,6 @@ Model = TypeVar("Model", bound=BaseModel)
 PDF_PATH = Path(r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf")
 # Put your own PDF path
 # =================================== #
-
-
-
-
 
 
 class ClaudeService:
@@ -32,10 +28,13 @@ class ClaudeService:
         system_prompt: str | None = None,
         max_tokens: int = 800,
     ) -> Message:
-
-            
+        if system_prompt is None:
+            system_prompt = ""
         completion = await self.client.messages.create(
-            model=model, messages=[{"role": "user", "content": inputs}], max_tokens=max_tokens, system=system_prompt
+            model=model,
+            messages=[{"role": "user", "content": inputs}],
+            max_tokens=max_tokens,
+            system=system_prompt,
         )
         return completion
 
@@ -48,11 +47,7 @@ class ClaudeService:
     ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
 
-        content = [{
-            "type": "text",
-            "text": inputs
-        }]
-
+        content = [{"type": "text", "text": inputs}]
 
         # Encoder le PDF en base64 #
         if pdf_data:
@@ -65,26 +60,23 @@ class ClaudeService:
                 pdf_bytes = pdf_data
             pdf_base64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
 
-            content.append({
-                "type": "document",
-                "source": {
-                    "type": "base64",
-                    "media_type": "application/pdf",
-                    "data": pdf_base64
+            content.append(
+                {
+                    "type": "document",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "application/pdf",
+                        "data": pdf_base64,
+                    },
                 }
-            })
+            )
 
 
         response = await self.client.beta.messages.create(
             model=model,
             max_tokens=1024,
             betas=["structured-outputs-2025-11-13"],
-            messages=[
-                {
-                    "role": "user",
-                    "content": content
-                }
-            ],
+            messages=[{"role": "user", "content": content}],
             output_format={
                 "type": "json_schema",
                 "schema": transform_schema(output_model)
@@ -94,16 +86,10 @@ class ClaudeService:
         return response.content[0].text
 
 
-
-
-
-
 claude_service = ClaudeService()
 
 
 async def main() -> None:
-
-
     message = await claude_service.structured_completion(
         inputs="Analyse this cv",
         output_model=PDFModel,
