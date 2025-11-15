@@ -1,7 +1,7 @@
 # main.py
 
 import asyncio # Async support
-from ClaudeAPI import ask_raw # Claude API wrapper
+from claudeAPI import ask_raw # Claude API wrapper
 
 # Configuration constants for the Claude API requests
 
