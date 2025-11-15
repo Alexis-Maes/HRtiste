@@ -96,7 +96,10 @@ class Interview(SQLModel, table=True):
 class PDFModel(BaseModel):
     first_name: str
     last_name: str
-    skills: List[str]
+    email: str
+    skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
+    experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))
 
 
 class ProcessCreate(SQLModel):

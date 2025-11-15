@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Union
 
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
@@ -10,11 +10,13 @@ from models.db_models import PDFModel
 
 Model = TypeVar("Model", bound=BaseModel)
 
+# =================================== #
+PDF_PATH = ""
+# =================================== #
 
 
-# =========================================== #
-PDF_PATH = r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf"
-# =========================================== #
+
+
 
 
 class ClaudeService:
@@ -38,17 +40,37 @@ class ClaudeService:
     async def structured_completion(
         self,
         inputs: str,
-        pdf_path: str,
-        ouput_model: Type[Model],
+        output_model: Type[Model],
+        pdf_data: Union[bytes, str, None] = None,
         model: str = "claude-sonnet-4-5"
     ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
 
+        content = [{
+            "type": "text",
+            "text": inputs
+        }]
 
-        with open(pdf_path, "rb") as f:
-            pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
 
-        output_json_schema = ouput_model.model_json_schema()
+        # Encoder le PDF en base64 #
+        if pdf_data:
+            if isinstance(pdf_data, str):
+                pdf_bytes = base64.standard_b64decode(pdf_data)
+            else:
+                pdf_bytes = pdf_data
+            pdf_base64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
+
+            content.append({
+                "type": "document",
+                "source": {
+                    "type": "base64",
+                    "media_type": "application/pdf",
+                    "data": pdf_base64
+                }
+            })
+
+        # Gérer le schéma de sortie #
+        output_json_schema = output_model.model_json_schema()
         output_json_schema = {
             "properties": {attribute: {'type': details['type']} for attribute, details in output_json_schema['properties'].items()},
             "required": output_json_schema.get("required", []),
@@ -61,20 +83,7 @@ class ClaudeService:
             messages=[
                 {
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "document",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "application/pdf",
-                                "data": pdf_data
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": inputs
-                        }
-                    ]
+                    "content": content
                 }
             ],
             output_format={
