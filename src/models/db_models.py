@@ -1,7 +1,8 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
+from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Column, Field, Relationship, SQLModel
 
 metadata = SQLModel.metadata
 # ============================================
@@ -17,19 +18,6 @@ class ProcessCandidateLink(SQLModel, table=True):
         default=None, foreign_key="candidate.id", primary_key=True
     )
 
-
-# ============================================
-# Recruiter
-# ============================================
-
-
-class Recruiter(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-
-    interviews: List["Interview"] = Relationship(back_populates="recruiter")
-
-
 # ============================================
 # Candidate
 # ============================================
@@ -39,10 +27,24 @@ class Candidate(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nom: str
     prenom: str
-    ecole: str
-    experience: str
     email: str
     numero: str
+
+    skills: list[str]
+
+    formations: List[str] = Field(default=[])
+    experiences: List[str] = Field(default=[])
+
+    business_strengths: str = Field(default=None)
+    technical_strengths: str = Field(default=None)
+    fit_strengths: str = Field(default=None)
+
+    business_attention_point: str = Field(default=None)
+    technical_attention_point: str = Field(default=None)
+    fit_attention_point: str = Field(default=None)
+
+    description: str
+    embeddings: Any = Field(default=None, sa_column=Column(Vector(1024)))
 
     interviews: List["Interview"] = Relationship(back_populates="candidate")
 
@@ -60,8 +62,9 @@ class Candidate(SQLModel, table=True):
 
 class Process(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name_process: str
+    name: str
     job_description: str
+    required_skills: List[str]
 
     candidates: List[Candidate] = Relationship(
         back_populates="processes",
@@ -76,13 +79,16 @@ class Process(SQLModel, table=True):
 
 class Interview(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-
-    recruiter_id: int = Field(foreign_key="recruiter.id")
+    date: str
+    recruiter_name: str
+    strengths: str
+    attention_points: str
     candidate_id: int = Field(foreign_key="candidate.id")
 
-    feedback: str
+    feedback_recruiter: str
+    feedback_candidate: str
 
-    recruiter: Recruiter = Relationship(back_populates="interviews")
+    recruiter_analysis_perforance: str
     candidate: Candidate = Relationship(back_populates="interviews")
 
 
