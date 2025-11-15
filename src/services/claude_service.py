@@ -3,10 +3,13 @@ from typing import Type, TypeVar
 from anthropic import AsyncAnthropic
 from anthropic.types import Message
 from pydantic import BaseModel
+import base64
 
 from services.config_service import ConfigService
 
 Model = TypeVar("Model", bound=BaseModel)
+
+
 
 
 class ClaudeService:
@@ -33,10 +36,62 @@ class ClaudeService:
         return completion
 
     async def structured_completion(
-        self, inputs: str, ouput_model: Type[Model], model: str = "claude-sonnet-4-5"
-    ):
+        self,
+        inputs: str,
+        pdf_path: str,
+        ouput_model: Type[Model],
+        model: str = "claude-sonnet-4-5"
+    ) -> Model:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
-        pass
+
+
+        with open(pdf_path, "rb") as f:
+            pdf_data = base64.standard_b64encode(f.read()).decode("utf-8")
+
+        output_json_schema = ouput_model.model_json_schema()
+        output_json_schema = {
+            "properties": {attribute: {'type': details['type']} for attribute, details in output_json_schema['properties'].items()},
+            "required": output_json_schema.get("required", []),
+        }
+
+        response = self.client.beta.messages.create(
+            model=model,
+            max_tokens=1024,
+            betas=["structured-outputs-2025-11-13"]
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "document",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "application/pdf",
+                                "data": pdf_data
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": inputs
+                        }
+                    ]
+                }
+            ],
+            output_format={
+                "type": "json_schema",
+                "schema": {
+                    "type": "object",
+                    **output_json_schema,
+                    "additionalProperties": False
+                }
+            }
+        )
+
+        return response.content[0].text
+
+
+
+
 
 
 claude_service = ClaudeService()
