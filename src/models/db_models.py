@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Literal
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
@@ -109,3 +109,25 @@ class InterviewCreate(SQLModel):
     recruiter_id: int
     candidate_id: int
     feedback: str
+
+
+# ============================================
+# Feedback model
+# ============================================
+
+class RejectionEmailRequest(BaseModel):
+    """
+    Payload sent by the front:
+    """
+    candidate_full_name: str
+    decision: Literal["accepted", "rejected"]
+    recruiter_name: Optional[str] = None
+    process_name: Optional[str] = None
+
+
+class RejectionEmailResponse(BaseModel):
+    """
+    Sendback to the front: mail template ready to display / copy.
+    """
+    subject: str
+    body: str
