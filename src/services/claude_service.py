@@ -28,15 +28,10 @@ class ClaudeService:
         system_prompt: str | None = None,
         max_tokens: int = 800,
     ) -> Message:
-        if system_prompt:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": inputs},
-            ]
-        else:
-            messages = [{"role": "user", "content": inputs}]
+
+            
         completion = await self.client.messages.create(
-            model=model, messages=messages, max_tokens=max_tokens
+            model=model, messages=[{"role": "user", "content": inputs}], max_tokens=max_tokens, system=system_prompt
         )
         return completion
 

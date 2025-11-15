@@ -1,5 +1,5 @@
 from typing import List
-
+from sqlalchemy.orm import selectinload
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 
@@ -12,13 +12,20 @@ router = APIRouter(tags=["Candidates"])
 @router.get("/processes/{process_id}/candidates", response_model=list[Candidate])
 async def get_candidates_for_process(process_id: int):
     async with db_service.get_session() as session:
-        # ensure process exists
-        query = select(Process).where(Process.id == process_id)
-        process = (await session.exec(query)).first()
+
+        # Load process AND preload candidates in one query (async-safe)
+        query = (
+            select(Process)
+            .where(Process.id == process_id)
+            .options(selectinload(Process.candidates))
+        )
+
+        result = await session.exec(query)
+        process = result.one_or_none()
+
         if not process:
             raise HTTPException(status_code=404, detail="Process not found")
 
-        # candidates via relationship
         return process.candidates
 
 
