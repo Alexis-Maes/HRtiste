@@ -4,6 +4,7 @@ from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel
 from sqlalchemy.dialects.postgresql import JSON
 from sqlmodel import Column, Field, Relationship, SQLModel
+from datetime import datetime
 
 metadata = SQLModel.metadata
 # ============================================
@@ -80,16 +81,16 @@ class Process(SQLModel, table=True):
 
 class Interview(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    date: str
+    date: datetime
     recruiter_name: str
-    strengths: str
-    attention_points: str
+    strengths: str = Field(default=None)
+    attention_points: str = Field(default=None)
     candidate_id: int = Field(foreign_key="candidate.id")
 
-    feedback_recruiter: str
-    feedback_candidate: str
+    feedback_recruiter: str = Field(default=None)
+    feedback_candidate: str = Field(default=None)
 
-    recruiter_analysis_perforance: str
+    recruiter_analysis_performance: str = Field(default=None)
     candidate: Candidate = Relationship(back_populates="interviews")
 
 
@@ -106,6 +107,30 @@ class ProcessCreate(SQLModel):
 
 
 class InterviewCreate(SQLModel):
-    recruiter_id: int
+    recruiter_name: str
     candidate_id: int
     feedback: str
+    date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class InterviewCreate(SQLModel):
+    recruiter_name: str
+    candidate_id: int
+    feedback_recruiter: str
+    date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class RelevantFields(SQLModel, table=False):
+    skills: List[str] = Field(default_factory=list)
+    formations: List[str] = Field(default_factory=list)
+    experiences: List[str] = Field(default_factory=list)
+
+    business_strengths: Optional[str] = None
+    technical_strengths: Optional[str] = None
+    fit_strengths: Optional[str] = None
+
+    business_attention_point: Optional[str] = None
+    technical_attention_point: Optional[str] = None
+    fit_attention_point: Optional[str] = None
+
+    description: Optional[str] = None

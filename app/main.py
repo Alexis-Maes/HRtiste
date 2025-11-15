@@ -21,6 +21,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+
+
+
+app.get("/")
+async def say_hello():
+    return {'data':"hello world"}
+
+
 app.include_router(candidate.router)
 app.include_router(interview.router)
 app.include_router(process.router)

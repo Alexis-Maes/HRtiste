@@ -3,11 +3,6 @@ from pydantic_settings import BaseSettings
 
 class _ConfigService(BaseSettings):
     db_type: str = "remote"
-    db_user: str = "postgres"
-    db_name: str = "postgres"
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_password: str = "postgres"
 
     doc_url_path: str = "docs_url.json"
 
