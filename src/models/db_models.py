@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
+metadata = SQLModel.metadata
+
 class Experience(BaseModel):
     company: str
     position: str
