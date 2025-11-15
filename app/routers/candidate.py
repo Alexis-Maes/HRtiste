@@ -1,9 +1,12 @@
 from typing import List
-from sqlalchemy.orm import selectinload
+
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
+from models.api_models import CandidateResponse, SearchParams
 from models.db_models import Candidate, Process
+from profile_manager import search_candidates
 from services.db_service import db_service
 
 router = APIRouter(tags=["Candidates"])
@@ -12,7 +15,6 @@ router = APIRouter(tags=["Candidates"])
 @router.get("/processes/{process_id}/candidates", response_model=list[Candidate])
 async def get_candidates_for_process(process_id: int):
     async with db_service.get_session() as session:
-
         # Load process AND preload candidates in one query (async-safe)
         query = (
             select(Process)
@@ -60,3 +62,27 @@ async def create_candidate(candidate: Candidate):
         await session.commit()
         session.refresh(candidate)
         return candidate
+
+
+@router.post("/candidate/search", response_model=List[CandidateResponse])
+async def search_candidates_route(request: SearchParams):
+    candidates = await search_candidates(query=request.query, limit=request.limit)
+    candidates_response = [
+        CandidateResponse(
+            nom=candidate.nom,
+            prenom=candidate.prenom,
+            email=candidate.email,
+            numero=candidate.numero,
+            skills=candidate.skills,
+            formations=candidate.formations,
+            experiences=candidate.experiences,
+            business_strengths=candidate.business_strengths,
+            business_attention_point=candidate.business_attention_point,
+            technical_strengths=candidate.technical_strengths,
+            technical_attention_point=candidate.technical_attention_point,
+            fit_attention_point=candidate.fit_attention_point,
+            fit_strengths=candidate.fit_strengths,
+        )
+        for candidate in candidates
+    ]
+    return candidates_response

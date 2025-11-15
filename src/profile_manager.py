@@ -53,7 +53,7 @@ async def update_description(candidate: Candidate) -> Candidate:
     return candidate
 
 
-async def search_candidates(query: str, limit: int = 1) -> Candidate:
+async def search_candidates(query: str, limit: int = 1) -> list[Candidate]:
     embedded_query = await embedding_service.get_embedding(text=query)
 
     async with db_service.get_session() as session:

@@ -86,8 +86,8 @@ class Interview(SQLModel, table=True):
     attention_points: str
     candidate_id: int = Field(foreign_key="candidate.id")
 
-    feedback_recruiter: str
-    feedback_candidate: str
+    feedback_recruiter: str = Field(default=None)
+    feedback_candidate: str = Field(default=None)
 
     recruiter_analysis_perforance: str
     candidate: Candidate = Relationship(back_populates="interviews")
