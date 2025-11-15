@@ -6,10 +6,15 @@ from pydantic import BaseModel
 import base64
 
 from services.config_service import ConfigService
+from models.db_models import PDFModel
 
 Model = TypeVar("Model", bound=BaseModel)
 
 
+
+# =========================================== #
+PDF_PATH = r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf"
+# =========================================== #
 
 
 class ClaudeService:
@@ -41,7 +46,7 @@ class ClaudeService:
         pdf_path: str,
         ouput_model: Type[Model],
         model: str = "claude-sonnet-4-5"
-    ) -> Model:
+    ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
 
 
@@ -54,10 +59,10 @@ class ClaudeService:
             "required": output_json_schema.get("required", []),
         }
 
-        response = self.client.beta.messages.create(
+        response = await self.client.beta.messages.create(
             model=model,
             max_tokens=1024,
-            betas=["structured-outputs-2025-11-13"]
+            betas=["structured-outputs-2025-11-13"],
             messages=[
                 {
                     "role": "user",
@@ -98,8 +103,14 @@ claude_service = ClaudeService()
 
 
 async def main() -> None:
-    message = await claude_service.completion("Hello, world!")
-    print(message.content)
+
+
+    message = await claude_service.structured_completion(
+        inputs="Hello, world!",
+        pdf_path=PDF_PATH,
+        ouput_model=PDFModel
+    )
+    print(message)
 
 
 if __name__ == "__main__":

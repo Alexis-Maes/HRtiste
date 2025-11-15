@@ -1,12 +1,12 @@
 # main.py
 
 import asyncio # Async support
-from ClaudeAPI import ask_raw # Claude API wrapper
+from claudeAPI import ask_raw # Claude API wrapper
 
 # Configuration constants for the Claude API requests
 
 SYSTEM_PROMPT = "PUT YOUR SYSTEM PROMPT HERE"
-PROMPT="PUT YOUR PROMPT HERE"
+PROMPT=""
 MODEL = "claude-sonnet-4-5" # Model to use : "claude-sonnet-4-5", "claude-haiku-4-5"
 MODEL_TEMP = 0.2
 MAX_TOKENS = 800
