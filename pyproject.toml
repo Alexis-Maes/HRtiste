@@ -21,6 +21,8 @@ dependencies = [
     "pydantic-settings>=2.12.0",
     "sqlmodel>=0.0.27",
     "kaggle>=1.7.4.5",
+    "pgvector>=0.4.1",
+    "mistralai>=1.9.11",
 ]
 
 [tool.setuptools.packages.find]
