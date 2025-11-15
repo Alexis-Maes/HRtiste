@@ -1,17 +1,18 @@
 from typing import Type, TypeVar, Union
+from pathlib import Path
 
-from anthropic import AsyncAnthropic
+from anthropic import AsyncAnthropic, transform_schema
 from anthropic.types import Message
 from pydantic import BaseModel
 import base64
 
 from services.config_service import ConfigService
-from models.db_models import PDFModel
+from models.db_models import PDFModel, Interview
 
 Model = TypeVar("Model", bound=BaseModel)
 
 # =================================== #
-PDF_PATH = ""
+PDF_PATH = Path(r"C:\Users\gasti\Downloads\CVAlexandreGastinel.pdf")
 # =================================== #
 
 
@@ -41,7 +42,7 @@ class ClaudeService:
         self,
         inputs: str,
         output_model: Type[Model],
-        pdf_data: Union[bytes, str, None] = None,
+        pdf_data: Union[Path, bytes, str, None] = None,
         model: str = "claude-sonnet-4-5"
     ) -> str:
         """BG: tu vas devoir creer ton model pydantic et gerer les pdf"""
@@ -54,7 +55,10 @@ class ClaudeService:
 
         # Encoder le PDF en base64 #
         if pdf_data:
-            if isinstance(pdf_data, str):
+            if isinstance(pdf_data, Path):
+                with open(pdf_data, "rb") as f:
+                    pdf_bytes = f.read()
+            elif isinstance(pdf_data, str):
                 pdf_bytes = base64.standard_b64decode(pdf_data)
             else:
                 pdf_bytes = pdf_data
@@ -69,12 +73,6 @@ class ClaudeService:
                 }
             })
 
-        # Gérer le schéma de sortie #
-        output_json_schema = output_model.model_json_schema()
-        output_json_schema = {
-            "properties": {attribute: {'type': details['type']} for attribute, details in output_json_schema['properties'].items()},
-            "required": output_json_schema.get("required", []),
-        }
 
         response = await self.client.beta.messages.create(
             model=model,
@@ -88,11 +86,7 @@ class ClaudeService:
             ],
             output_format={
                 "type": "json_schema",
-                "schema": {
-                    "type": "object",
-                    **output_json_schema,
-                    "additionalProperties": False
-                }
+                "schema": transform_schema(output_model)
             }
         )
 
@@ -110,11 +104,14 @@ async def main() -> None:
 
 
     message = await claude_service.structured_completion(
-        inputs="Hello, world!",
-        pdf_path=PDF_PATH,
-        ouput_model=PDFModel
+        inputs="Analyse this cv",
+        output_model=PDFModel,
+        pdf_data=PDF_PATH,
     )
     print(message)
+
+
+
 
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Type
 from sqlalchemy.orm import selectinload
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile
 from sqlmodel import select
 
 from models.db_models import Candidate, Process
 from services.db_service import db_service
+from services.claude_service import ClaudeService
 
 router = APIRouter(tags=["Candidates"])
 
@@ -60,3 +61,26 @@ async def create_candidate(candidate: Candidate):
         await session.commit()
         session.refresh(candidate)
         return candidate
+
+
+
+
+@router.post("/candidates", response_model=Candidate)
+async def create_candidate_with_uploaded_cv(cv: UploadFile):
+
+    pdf_bytes = await cv.read()
+
+    try:
+        result = ClaudeService.structured_completion(
+            inputs="Extrait les informations du candidat depuis ce CV.",
+            output_model=Candidate,
+            pdf_data=pdf_bytes,
+            model="claude-sonnet-4-5"
+        )
+        import json
+        candidate_data = json.loads(result)
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erreur lors du traitement du CV : {str(e)}")
+
+    db_service.add_element(candidate_data)
