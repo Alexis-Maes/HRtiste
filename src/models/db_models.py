@@ -106,6 +106,5 @@ class ProcessCreate(SQLModel):
 
 
 class InterviewCreate(SQLModel):
-    recruiter_id: int
     candidate_id: int
     feedback: str

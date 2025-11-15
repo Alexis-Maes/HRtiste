@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from models.db_models import metadata
 from services.db_service import db_service
 
-from .routers import candidate, interview, process, recruiter
+from .routers import candidate, interview, process, interview_audio
 
 
 @asynccontextmanager
@@ -24,4 +24,5 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(candidate.router)
 app.include_router(interview.router)
 app.include_router(process.router)
-app.include_router(recruiter.router)
+app.include_router(interview_audio.router)
+

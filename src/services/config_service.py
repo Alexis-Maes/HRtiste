@@ -19,6 +19,7 @@ class _ConfigService(BaseSettings):
 
     anthropic_api_key: str | None = None
     mistral_api_key: str | None = None
+    elevenlabs_api_key : str | None = None
     
 
     class Config:
