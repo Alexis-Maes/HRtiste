@@ -30,23 +30,22 @@ class Candidate(SQLModel, table=True):
     nom: str
     prenom: str
     email: str
-    numero: Optional[str] = Field(default=None)
-    linkedin: str = Field(default=None)
+    numero: Optional[str] = Field(default='')
 
     skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))
 
-    business_strengths: str = Field(default=None)
-    technical_strengths: str = Field(default=None)
-    fit_strengths: str = Field(default=None)
+    business_strengths: str = Field(default='')
+    technical_strengths: str = Field(default='')
+    fit_strengths: str = Field(default='')
 
-    business_attention_point: str = Field(default=None)
-    technical_attention_point: str = Field(default=None)
-    fit_attention_point: str = Field(default=None)
+    business_attention_point: str = Field(default='')
+    technical_attention_point: str = Field(default='')
+    fit_attention_point: str = Field(default='')
 
-    description: str = Field(default=None)
-    embeddings: Any = Field(default=None, sa_column=Column(Vector(1024)))
+    description: str = Field(default='')
+    embeddings: Any = Field(default='', sa_column=Column(Vector(1024)))
 
     interviews: List["Interview"] = Relationship(back_populates="candidate")
 
@@ -95,9 +94,10 @@ class Interview(SQLModel, table=True):
 
 
 class PDFModel(BaseModel):
-    prenom: str
     nom: str
+    prenom: str
     email: str
+    numero: str | None = ""
     skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))

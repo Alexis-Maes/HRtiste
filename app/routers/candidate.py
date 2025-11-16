@@ -7,7 +7,7 @@ from models.api_models import CandidateResponse, SearchParams
 from models.db_models import Candidate, Process
 from profile_manager import search_candidates, update_description
 from services.db_service import db_service
-from services.claude_service import ClaudeService
+from services.upload_cv import cv_to_db
 
 router = APIRouter(tags=["Candidates"])
 
@@ -69,23 +69,10 @@ async def create_candidate(candidate: Candidate):
 
 @router.post("/candidates", response_model=Candidate)
 async def create_candidate_with_uploaded_cv(cv: UploadFile):
-
     pdf_bytes = await cv.read()
+    await cv_to_db(pdf_bytes)
 
-    try:
-        result = ClaudeService.structured_completion(
-            inputs="Extrait les informations du candidat depuis ce CV.",
-            output_model=Candidate,
-            pdf_data=pdf_bytes,
-            model="claude-sonnet-4-5"
-        )
-        import json
-        candidate_data = json.loads(result)
     
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erreur lors du traitement du CV : {str(e)}")
-
-    db_service.add_element(candidate_data)
 
 
 
