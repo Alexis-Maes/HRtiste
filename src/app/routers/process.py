@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 
-from models.db_models import Candidate, Process, ProcessCandidateLink, ProcessCreate
-from services.db_service import db_service
+from src.models.db_models import Candidate, Process, ProcessCandidateLink, ProcessCreate
+from src.services.db_service import db_service
 
 router = APIRouter(tags=["Processes"])
 

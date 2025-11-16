@@ -1,16 +1,16 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-
-from models.db_models import metadata
-from services.db_service import db_service
+from sqlmodel import SQLModel
+from src.services.db_service import db_service
 
 from .routers import candidate, interview, process, interview_audio, feedback
-
+from src.models.db_models import metadata
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup : créer les tables
+    
     await db_service.check_initialized()
     async with db_service.engine.begin() as conn:
         await conn.run_sync(metadata.create_all)

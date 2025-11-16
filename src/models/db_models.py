@@ -12,7 +12,7 @@ metadata = SQLModel.metadata
 # ============================================
 
 
-class ProcessCandidateLink(SQLModel, table=True):
+class ProcessCandidateLink(SQLModel, table=True, extend_existing=True):
     process_id: Optional[int] = Field(
         default=None, foreign_key="process.id", primary_key=True
     )
@@ -20,10 +20,6 @@ class ProcessCandidateLink(SQLModel, table=True):
         default=None, foreign_key="candidate.id", primary_key=True
     )
 
-
-# ============================================
-# Candidate
-# ============================================
 
 
 class Candidate(SQLModel, table=True):
@@ -53,13 +49,8 @@ class Candidate(SQLModel, table=True):
     # Many-to-many with Process
     processes: List["Process"] = Relationship(
         back_populates="candidates",
-        link_model=ProcessCandidateLink,  # ✔️ class, not string
+        link_model=ProcessCandidateLink,  
     )
-
-
-# ============================================
-# Process
-# ============================================
 
 
 class Process(SQLModel, table=True):
@@ -72,11 +63,6 @@ class Process(SQLModel, table=True):
         back_populates="processes",
         link_model=ProcessCandidateLink,  # ✔️ class exists already
     )
-
-
-# ============================================
-# Interview
-# ============================================
 
 
 class Interview(SQLModel, table=True):
@@ -100,22 +86,14 @@ class PDFModel(BaseModel):
     first_name: str
     last_name: str
     email: str
-    skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
-    formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
-    experiences: List[str] = Field(default_factory=list, sa_column=Column(JSON))
-
+    skills: list[str] = []
+    formations: List[str] = []
+    experiences: List[str] = []
 
 class ProcessCreate(SQLModel):
     name_process: str
     job_description: str
     candidate_ids: Optional[List[int]] = None  # facultatif
-
-
-class InterviewCreate(SQLModel):
-    recruiter_name: str
-    candidate_id: int
-    feedback: str
-    date: datetime = Field(default_factory=datetime.utcnow)
 
 
 class InterviewCreate(SQLModel):
@@ -158,3 +136,6 @@ class RejectionEmailResponse(BaseModel):
     """
     subject: str
     body: str
+
+
+TableModel=Union[Interview,Candidate,Process]

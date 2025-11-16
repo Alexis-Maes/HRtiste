@@ -4,8 +4,8 @@ from typing import Any, AsyncGenerator, Self
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from models.db_models import TableModel
-from services.config_service import ConfigService
+from src.models.db_models import TableModel
+from src.services.config_service import ConfigService
 
 
 class _DatabaseService:

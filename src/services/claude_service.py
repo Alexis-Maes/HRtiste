@@ -5,8 +5,8 @@ from anthropic import AsyncAnthropic
 from anthropic.types import Message
 from pydantic import BaseModel
 
-from models.db_models import PDFModel
-from services.config_service import ConfigService
+from src.models.db_models import PDFModel
+from src.services.config_service import ConfigService
 
 Model = TypeVar("Model", bound=BaseModel)
 
@@ -26,6 +26,8 @@ class ClaudeService:
         system_prompt: str | None = None,
         max_tokens: int = 800,
     ) -> Message:
+        if system_prompt is None:
+            system_prompt=""
         completion = await self.client.messages.create(
             model=model,
             messages=[{"role": "user", "content": inputs}],

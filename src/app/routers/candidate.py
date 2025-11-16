@@ -3,11 +3,11 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
-
-from models.api_models import CandidateResponse, SearchParams
-from models.db_models import Candidate, Process
-from profile_manager import search_candidates
-from services.db_service import db_service
+from profile_manager import update_description
+from src.models.api_models import CandidateResponse, SearchParams
+from src.models.db_models import Candidate, Process
+from src.profile_manager import search_candidates
+from src.services.db_service import db_service
 
 router = APIRouter(tags=["Candidates"])
 
@@ -58,6 +58,7 @@ async def get_candidate_by_id(candidate_id: int):
 @router.post("/candidates", response_model=Candidate)
 async def create_candidate(candidate: Candidate):
     async with db_service.get_session() as session:
+        candidate= await update_description(candidate)
         session.add(candidate)
         await session.commit()
         session.refresh(candidate)
@@ -82,6 +83,7 @@ async def search_candidates_route(request: SearchParams):
             technical_attention_point=candidate.technical_attention_point,
             fit_attention_point=candidate.fit_attention_point,
             fit_strengths=candidate.fit_strengths,
+            description=candidate.description
         )
         for candidate in candidates
     ]

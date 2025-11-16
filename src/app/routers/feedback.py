@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.orm import selectinload
 import json
 
-from models.db_models import (
+from src.models.db_models import (
     Candidate,
     Interview,
     Process,

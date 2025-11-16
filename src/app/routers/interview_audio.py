@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 
 router = APIRouter(tags=["Interviews_audio"])
 
-from services.db_service import db_service
-from models.db_models import Interview
+from src.services.db_service import db_service
+from src.models.db_models import Interview
 from sqlmodel import select
 
 from src.services.claude_service import claude_service
