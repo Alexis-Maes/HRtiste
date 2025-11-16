@@ -35,11 +35,28 @@ async def get_candidates_for_process(process_id: int):
 async def search_candidate_by_name(name: str):
     async with db_service.get_session() as session:
         statement = select(Candidate).where(Candidate.nom.contains(name))
-        results = (await session.exec(statement)).all()
+        candidates = (await session.exec(statement)).all()
 
         if not results:
             raise HTTPException(status_code=404, detail="No matching candidate found")
 
+        results = [CandidateResponse(
+            nom=candidate.nom,
+            prenom=candidate.prenom,
+            email=candidate.email,
+            numero=candidate.numero,
+            skills=candidate.skills,
+            formations=candidate.formations,
+            experiences=candidate.experiences,
+            business_strengths=candidate.business_strengths,
+            business_attention_point=candidate.business_attention_point,
+            technical_strengths=candidate.technical_strengths,
+            technical_attention_point=candidate.technical_attention_point,
+            fit_attention_point=candidate.fit_attention_point,
+            fit_strengths=candidate.fit_strengths,
+            description=candidate.description
+        )
+        for candidate in candidates]
         return results
 
 
