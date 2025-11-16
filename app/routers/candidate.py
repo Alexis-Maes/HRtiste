@@ -1,13 +1,6 @@
-<<<<<<< HEAD
 from typing import List, Type
 from sqlalchemy.orm import selectinload
 from fastapi import APIRouter, HTTPException, UploadFile
-=======
-from typing import List
-
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import selectinload
->>>>>>> main
 from sqlmodel import select
 
 from models.api_models import CandidateResponse, SearchParams
@@ -72,7 +65,6 @@ async def create_candidate(candidate: Candidate):
         return candidate
 
 
-<<<<<<< HEAD
 
 
 @router.post("/candidates", response_model=Candidate)
@@ -94,7 +86,9 @@ async def create_candidate_with_uploaded_cv(cv: UploadFile):
         raise HTTPException(status_code=400, detail=f"Erreur lors du traitement du CV : {str(e)}")
 
     db_service.add_element(candidate_data)
-=======
+
+
+
 @router.post("/candidate/search", response_model=List[CandidateResponse])
 async def search_candidates_route(request: SearchParams):
     candidates = await search_candidates(query=request.query, limit=request.limit)
@@ -118,4 +112,3 @@ async def search_candidates_route(request: SearchParams):
         for candidate in candidates
     ]
     return candidates_response
->>>>>>> main
