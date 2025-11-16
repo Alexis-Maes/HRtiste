@@ -1,23 +1,25 @@
-from fastapi import APIRouter, HTTPException
-from sqlmodel import select
-from sqlalchemy.orm import selectinload
 import json
+
+from fastapi import APIRouter, HTTPException
+from sqlalchemy.orm import selectinload
+from sqlmodel import select
 
 from models.db_models import (
     Candidate,
     Interview,
-    Process,
     RejectionEmailRequest,
     RejectionEmailResponse,
 )
-from services.db_service import db_service
 from services.claude_service import claude_service
+from services.db_service import db_service
 
 router = APIRouter(tags=["Feedback"])
 
 
 @router.post("/interviews/rejection-email", response_model=RejectionEmailResponse)
-async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionEmailResponse:
+async def generate_rejection_email(
+    payload: RejectionEmailRequest,
+) -> RejectionEmailResponse:
     """
     Generate a personalized rejection email for a candidate based on their interview feedback.
     """
@@ -32,7 +34,7 @@ async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionE
     # ============================
     # 1. Retrieve candidate, interview, process from DB
     # ============================
-    full_name = payload.candidate_full_name.strip()
+    full_name = payload.candidate_full_name.strip().lower()
     parts = full_name.split()
 
     if len(parts) < 2:
@@ -49,8 +51,8 @@ async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionE
         stmt = (
             select(Candidate)
             .where(
-                Candidate.prenom == first_name,
-                Candidate.nom == last_name,
+                Candidate.prenom.lower() == first_name,
+                Candidate.nom.lower() == last_name,
             )
             .options(
                 selectinload(Candidate.processes),
@@ -92,7 +94,9 @@ async def generate_rejection_email(payload: RejectionEmailRequest) -> RejectionE
     formations = ", ".join(candidate.formations) if candidate.formations else "N/A"
     experiences = ", ".join(candidate.experiences) if candidate.experiences else "N/A"
 
-    process_name = payload.process_name or (process.name if process else "votre candidature")
+    process_name = payload.process_name or (
+        process.name if process else "votre candidature"
+    )
     job_description = process.job_description if process else "N/A"
 
     recruiter_name = payload.recruiter_name or interview.recruiter_name
@@ -169,7 +173,7 @@ Pas de texte avant ou après, pas de markdown, pas de commentaire.
     completion = await claude_service.completion(
         inputs=prompt,
         max_tokens=800,
-        system_prompt="Tu renvoies uniquement du JSON valide correspondant exactement au schéma demandé."
+        system_prompt="Tu renvoies uniquement du JSON valide correspondant exactement au schéma demandé.",
     )
 
     # Anthropics : we receive the response in chunks, need to concatenate
