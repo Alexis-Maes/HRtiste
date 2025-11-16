@@ -30,7 +30,7 @@ class Candidate(SQLModel, table=True):
     nom: str
     prenom: str
     email: str
-    numero: str
+    numero: str = Field(default=None)
 
     skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
@@ -44,7 +44,7 @@ class Candidate(SQLModel, table=True):
     technical_attention_point: str = Field(default=None)
     fit_attention_point: str = Field(default=None)
 
-    description: str
+    description: str = Field(default=None)
     embeddings: Any = Field(default=None, sa_column=Column(Vector(1024)))
 
     interviews: List["Interview"] = Relationship(back_populates="candidate")
@@ -94,8 +94,8 @@ class Interview(SQLModel, table=True):
 
 
 class PDFModel(BaseModel):
-    first_name: str
-    last_name: str
+    prenom: str
+    nom: str
     email: str
     skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     formations: List[str] = Field(default_factory=list, sa_column=Column(JSON))
